@@ -70,6 +70,11 @@ function requireAuth(req: any, res: any, next: any) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend is running' });
+});
+
 // Student registration
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
