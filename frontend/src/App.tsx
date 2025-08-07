@@ -602,7 +602,7 @@ function ScheduleGrid({ courses }: { courses: any[] }) {
   );
 }
 
-function StudentMyPlan({ user }: { user: User }) {
+function StudentMyPlan({ user: _user }: { user: User }) {
   const [myPlan, setMyPlan] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -784,7 +784,7 @@ function StudentMyPlan({ user }: { user: User }) {
   );
 }
 
-function StudentCourseBrowser({ user }: { user: User }) {
+function StudentCourseBrowser({ user: _user }: { user: User }) {
   const [pathways, setPathways] = useState<any[]>([]);
   const [selectedPathway, setSelectedPathway] = useState<string | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
