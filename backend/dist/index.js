@@ -27,30 +27,14 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     cookie: { secure: false } // set to true if using HTTPS
 }));
-const db = new sqlite3_1.default.Database('database.db');
-db.run(`CREATE TABLE IF NOT EXISTS courses (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  quarter TEXT NOT NULL,
-  pathway_id TEXT,
-  description TEXT,
-  credits INTEGER,
-  prerequisites TEXT,
-  reddit_link TEXT,
-  ratemyprofessor_link TEXT,
-  difficulty_rating REAL,
-  workload_rating REAL,
-  schedule_days TEXT,
-  schedule_time TEXT,
-  start_date TEXT,
-  end_date TEXT
-)`, (err) => {
-    if (err) {
-        console.error('Error creating courses table:', err);
-    }
-    else {
-        console.log('Courses table created or already exists.');
-    }
+// Health check endpoint - responds immediately
+app.get('/api/health', (req, res) => {
+    console.log('Health check requested');
+    res.json({
+        status: 'ok',
+        message: 'Backend is running',
+        timestamp: new Date().toISOString()
+    });
 });
 // Simple root endpoint for testing
 app.get('/', (req, res) => {
