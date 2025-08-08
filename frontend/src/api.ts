@@ -6,9 +6,7 @@ const getApiBaseUrl = () => {
   }
   
   // In production, use the deployed backend URL
-  // TODO: Replace this with your actual Railway URL once deployed
-  // Example: return 'https://my-app-name.railway.app';
-  return 'https://your-railway-app.railway.app';
+  return 'https://informatics-myplan-beta-production.up.railway.app';
 };
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
