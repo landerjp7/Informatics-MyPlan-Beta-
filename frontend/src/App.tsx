@@ -302,8 +302,7 @@ function PathwaysList({ isAdmin }: { isAdmin: boolean }) {
   const [error, setError] = useState('');
   const refresh = () => {
     setLoading(true);
-    fetch('/api/pathways')
-      .then(res => res.json())
+    apiGet('/api/pathways')
       .then(data => {
         setPathways(data.pathways);
         setLoading(false);
@@ -347,8 +346,7 @@ function PathwayCourses({ isAdmin, user }: { isAdmin: boolean, user: User | null
   // Fetch all courses for pathway to get available quarters
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/pathway/${id}/courses`)
-      .then(res => res.json())
+    apiGet(`/api/pathway/${id}/courses`)
       .then(data => {
         const quarters = Array.from(new Set((data.courses || []).map((c: any) => String(c.quarter)))).sort();
         setAvailableQuarters(quarters as string[]);
@@ -359,11 +357,7 @@ function PathwayCourses({ isAdmin, user }: { isAdmin: boolean, user: User | null
     setLoading(true);
     let url = `/api/pathway/${id}/courses`;
     if (quarter && quarter !== 'All') url += `?quarter=${encodeURIComponent(quarter)}`;
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
+    apiGet(url)
       .then(data => {
         setCourses(data.courses);
         setLoading(false);
@@ -372,16 +366,14 @@ function PathwayCourses({ isAdmin, user }: { isAdmin: boolean, user: User | null
         setError('Failed to load courses');
         setLoading(false);
       });
-    fetch('/api/pathways')
-      .then(res => res.json())
+    apiGet('/api/pathways')
       .then(data => {
         const pathway = data.pathways.find((p: any) => p.id === id);
         setPathwayName(pathway ? pathway.name : id);
       });
     // If student, fetch their MyPlan
     if (user && !user.isAdmin) {
-      fetch('/api/myplan', { credentials: 'include' })
-        .then(res => res.json())
+      apiGet('/api/myplan')
         .then(data => {
           setMyPlanIds((data.myplan || []).map((c: any) => c.id));
         });
@@ -391,20 +383,12 @@ function PathwayCourses({ isAdmin, user }: { isAdmin: boolean, user: User | null
 
   const handleDelete = async (courseId: string) => {
     if (!window.confirm('Delete this course?')) return;
-    const res = await fetch(`/api/courses/${courseId}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    });
-    if (res.ok) refresh();
+    await apiDelete(`/api/courses/${courseId}`);
+    refresh();
   };
 
   const handleAddToMyPlan = async (courseId: string) => {
-    await fetch('/api/myplan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ courseId })
-    });
+    await apiPost('/api/myplan', { courseId });
     refresh();
   };
 
@@ -596,8 +580,7 @@ function StudentMyPlan({ user: _user }: { user: User }) {
 
   const fetchMyPlan = () => {
     setLoading(true);
-    fetch('/api/myplan', { credentials: 'include' })
-      .then(res => res.json())
+    apiGet('/api/myplan')
       .then(data => {
         setMyPlan(data.myplan || []);
         // Debug log
@@ -616,10 +599,7 @@ function StudentMyPlan({ user: _user }: { user: User }) {
   useEffect(() => { fetchMyPlan(); }, []);
 
   const handleRemove = async (courseId: string) => {
-    await fetch(`/api/myplan/${courseId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+    await apiDelete(`/api/myplan/${courseId}`);
     fetchMyPlan();
   };
 
@@ -780,19 +760,16 @@ function StudentCourseBrowser({ user: _user }: { user: User }) {
 
   // Fetch pathways and MyPlan on mount
   useEffect(() => {
-    fetch('/api/pathways')
-      .then(res => res.json())
+    apiGet('/api/pathways')
       .then(data => setPathways(data.pathways || []));
-    fetch('/api/myplan', { credentials: 'include' })
-      .then(res => res.json())
+    apiGet('/api/myplan')
       .then(data => setMyPlanIds((data.myplan || []).map((c: any) => c.id)));
   }, []);
 
   // Fetch available quarters when pathway changes
   useEffect(() => {
     if (!selectedPathway) return setAvailableQuarters([]);
-    fetch(`/api/pathway/${selectedPathway}/courses`)
-      .then(res => res.json())
+    apiGet(`/api/pathway/${selectedPathway}/courses`)
       .then(data => {
         const quarters = Array.from(new Set((data.courses || []).map((c: any) => String(c.quarter)))).sort();
         setAvailableQuarters(quarters as string[]);
@@ -805,8 +782,7 @@ function StudentCourseBrowser({ user: _user }: { user: User }) {
     setLoading(true);
     let url = `/api/pathway/${selectedPathway}/courses`;
     if (quarter && quarter !== 'All') url += `?quarter=${encodeURIComponent(quarter)}`;
-    fetch(url)
-      .then(res => res.json())
+    apiGet(url)
       .then(data => {
         setCourses(data.courses || []);
         setLoading(false);
@@ -815,26 +791,17 @@ function StudentCourseBrowser({ user: _user }: { user: User }) {
         setError('Failed to load courses');
         setLoading(false);
       });
-    fetch('/api/myplan', { credentials: 'include' })
-      .then(res => res.json())
+    apiGet('/api/myplan')
       .then(data => setMyPlanIds((data.myplan || []).map((c: any) => c.id)));
   }, [selectedPathway, quarter]);
 
   const handleAddToMyPlan = async (courseId: string) => {
-    await fetch('/api/myplan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ courseId })
-    });
+    await apiPost('/api/myplan', { courseId });
     setMyPlanIds([...myPlanIds, courseId]);
   };
 
   const handleRemoveFromMyPlan = async (courseId: string) => {
-    await fetch(`/api/myplan/${courseId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+    await apiDelete(`/api/myplan/${courseId}`);
     setMyPlanIds(myPlanIds.filter(id => id !== courseId));
   };
 
