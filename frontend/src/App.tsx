@@ -286,12 +286,15 @@ function AddCourseForm({ pathwayId, onAdd }: { pathwayId: string, onAdd: () => v
 }
 
 function PathwaysList({ isAdmin }: { isAdmin: boolean }) {
+  console.log('📋 PathwaysList component rendering, isAdmin:', isAdmin);
+  
   const [pathways, setPathways] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const refresh = () => {
-    setLoading(true);
     console.log('🔍 Making API call to /api/pathways...');
+    setLoading(true);
     apiGet('/api/pathways')
       .then(data => {
         console.log('✅ API call successful:', data);
@@ -304,7 +307,13 @@ function PathwaysList({ isAdmin }: { isAdmin: boolean }) {
         setLoading(false);
       });
   };
-  useEffect(() => { refresh(); }, []);
+  
+  useEffect(() => { 
+    console.log('🔄 PathwaysList useEffect running');
+    refresh(); 
+  }, []);
+
+  console.log('📊 PathwaysList render state:', { loading, error, pathwaysCount: pathways.length });
 
   if (loading) return <div className="center">Loading pathways...</div>;
   if (error) return <div className="center error">{error}</div>;
