@@ -53,6 +53,31 @@ db.run(`CREATE TABLE IF NOT EXISTS courses (
 });
 console.log('CREATE TABLE statement for courses executed.');
 
+// Create users table
+db.run(`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL
+)`, (err) => {
+  if (err) {
+    console.error('Error creating users table:', err);
+  } else {
+    console.log('Users table created or already exists.');
+  }
+});
+
+// Create pathways table
+db.run(`CREATE TABLE IF NOT EXISTS pathways (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+)`, (err) => {
+  if (err) {
+    console.error('Error creating pathways table:', err);
+  } else {
+    console.log('Pathways table created or already exists.');
+  }
+});
+
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'password123';
 
@@ -322,7 +347,45 @@ db.run(`CREATE TABLE IF NOT EXISTS student_courses (
   PRIMARY KEY (user_id, course_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (course_id) REFERENCES courses(id)
-)`);
+)`, (err) => {
+  if (err) {
+    console.error('Error creating student_courses table:', err);
+  } else {
+    console.log('Student_courses table created or already exists.');
+  }
+});
+
+// Insert sample pathway data if it doesn't exist
+db.run(`INSERT OR IGNORE INTO pathways (id, name) VALUES 
+  ('path1', 'Informatics Core'),
+  ('path2', 'Data Science Track'),
+  ('path3', 'Human-Computer Interaction'),
+  ('path4', 'Information Architecture')`, (err) => {
+  if (err) {
+    console.error('Error inserting sample pathways:', err);
+  } else {
+    console.log('Sample pathways inserted or already exist.');
+  }
+});
+
+// Insert sample course data if it doesn't exist
+db.run(`INSERT OR IGNORE INTO courses (id, name, quarter, pathway_id, description, credits) VALUES 
+  ('INFO200', 'Foundations of Informatics', 'Autumn 2024', 'path1', 'Introduction to informatics concepts and methods', 5),
+  ('INFO201', 'Technical Foundations of Informatics', 'Winter 2025', 'path1', 'Technical skills for informatics', 5),
+  ('INFO300', 'Research Methods in Informatics', 'Spring 2025', 'path1', 'Research methodologies in informatics', 5),
+  ('INFO310', 'Information Systems Analysis and Design', 'Autumn 2024', 'path2', 'Analysis and design of information systems', 5),
+  ('INFO340', 'Client-Side Development', 'Winter 2025', 'path2', 'Web development and client-side technologies', 5),
+  ('INFO360', 'Design Methods', 'Spring 2025', 'path3', 'Design methodologies and user experience', 5),
+  ('INFO370', 'Information Visualization', 'Autumn 2024', 'path3', 'Data visualization techniques', 5),
+  ('INFO380', 'Database Design and Management', 'Winter 2025', 'path4', 'Database design and management principles', 5),
+  ('INFO441', 'Information Systems Capstone', 'Spring 2025', 'path4', 'Capstone project in information systems', 5),
+  ('INFO442', 'Informatics Capstone', 'Autumn 2024', 'path1', 'Final capstone project in informatics', 5)`, (err) => {
+  if (err) {
+    console.error('Error inserting sample courses:', err);
+  } else {
+    console.log('Sample courses inserted or already exist.');
+  }
+});
 
 // Ensure schedule_days and schedule_time columns exist in courses table
 // (SQLite doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN, so we use a workaround)
