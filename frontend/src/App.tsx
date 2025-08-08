@@ -937,14 +937,26 @@ function App() {
 
   // Check login state on mount
   useEffect(() => {
-    apiGet('/api/pathways')
+    // Check if user is logged in by trying to access a protected endpoint
+    apiGet('/api/myplan')
       .then(() => {
-        // If we get here, assume admin if session exists
-        setUser(document.cookie.includes('connect.sid') ? { userId: 0, username: 'admin', isAdmin: true } : null);
+        // If we can access myplan, user is logged in as student
+        setUser({ userId: 1, username: 'student', isAdmin: false });
       })
       .catch(() => {
-        // If we get an error, not admin
-        setUser(null);
+        // Check if admin session exists
+        if (document.cookie.includes('connect.sid')) {
+          // Try admin endpoint to confirm
+          apiGet('/api/pathways')
+            .then(() => {
+              setUser({ userId: 0, username: 'admin', isAdmin: true });
+            })
+            .catch(() => {
+              setUser(null);
+            });
+        } else {
+          setUser(null);
+        }
       });
   }, []);
 
