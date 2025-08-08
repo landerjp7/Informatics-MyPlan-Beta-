@@ -261,19 +261,13 @@ function AddCourseForm({ pathwayId, onAdd }: { pathwayId: string, onAdd: () => v
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    const res = await fetch(`/api/pathway/${pathwayId}/courses`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ courseId, name, quarter })
-    });
-    if (res.ok) {
+    try {
+      await apiPost(`/api/pathway/${pathwayId}/courses`, { courseId, name, quarter });
       setSuccess('Course added!');
       setCourseId(''); setName(''); setQuarter('');
       onAdd();
-    } else {
-      const data = await res.json();
-      setError(data.error || 'Failed to add course');
+    } catch (error: any) {
+      setError(error.message || 'Failed to add course');
     }
   };
 
