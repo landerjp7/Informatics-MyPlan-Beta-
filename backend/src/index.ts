@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
-import { initializeDatabase, closeDatabase } from './database';
 
 // Extend the Request interface to include session
 declare module 'express-session' {
@@ -18,16 +17,12 @@ const PORT = process.env.PORT || 5000;
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('Shutting down gracefully...');
-  closeDatabase().then(() => {
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('Shutting down gracefully...');
-  closeDatabase().then(() => {
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
 app.use(cors({ origin: true, credentials: true }));
@@ -166,24 +161,9 @@ app.delete('/api/myplan/:courseId', (req, res) => {
   res.json({ message: 'Course removed from MyPlan' });
 });
 
-// Initialize database and start server
-async function startServer() {
-  try {
-    console.log('Initializing database...');
-    await initializeDatabase();
-    console.log('Database initialized successfully');
-    
-    // Start server only after database is ready
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Health check available at: http://localhost:${PORT}/api/health`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-    process.exit(1);
-  }
-}
-
-// Start the server
-startServer(); 
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+}); 
