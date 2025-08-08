@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
 import './App.css';
+import { apiPost, apiGet, apiDelete } from './api';
 
 interface User {
   userId: number;
@@ -30,8 +31,7 @@ function StudentPortal({ user }: { user: User }) {
 
   const fetchMyPlan = () => {
     setLoading(true);
-    fetch('/api/myplan', { credentials: 'include' })
-      .then(res => res.json())
+    apiGet('/api/myplan')
       .then(data => {
         setMyPlan(data.myplan || []);
         setLoading(false);
@@ -45,10 +45,7 @@ function StudentPortal({ user }: { user: User }) {
   useEffect(() => { fetchMyPlan(); }, []);
 
   const handleRemove = async (courseId: string) => {
-    await fetch(`/api/myplan/${courseId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+    await apiDelete(`/api/myplan/${courseId}`);
     fetchMyPlan();
   };
 
@@ -124,16 +121,9 @@ function StudentAuth({ onLogin }: { onLogin: (user: User) => void }) {
     setError('');
     setSuccess('');
     
-    const endpoint = isRegistering ? '/api/register' : '/api/student-login';
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ username, password })
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const endpoint = isRegistering ? '/api/register' : '/api/student-login';
+      const data = await apiPost(endpoint, { username, password });
       setSuccess(data.message);
       if (data.user) {
         onLogin(data.user);
@@ -141,9 +131,8 @@ function StudentAuth({ onLogin }: { onLogin: (user: User) => void }) {
       }
       setUsername('');
       setPassword('');
-    } else {
-      const data = await res.json();
-      setError(data.error || 'Failed to authenticate');
+    } catch (err: any) {
+      setError(err.message || 'Failed to authenticate');
     }
   };
 
@@ -198,16 +187,11 @@ function AdminLoginForm({ onLogin }: { onLogin: (user: User) => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ username, password })
-    });
-    if (res.ok) {
+    try {
+      await apiPost('/api/login', { username, password });
       onLogin({ userId: 0, username: 'admin', isAdmin: true });
-    } else {
-      setError('Invalid credentials');
+    } catch (err: any) {
+      setError(err.message || 'Invalid credentials');
     }
   };
 
@@ -953,10 +937,14 @@ function App() {
 
   // Check login state on mount
   useEffect(() => {
-    fetch('/api/pathways', { credentials: 'include' })
-      .then(res => {
-        // If we get 401, not admin; if 200, assume admin if session exists
-        setUser(res.status !== 401 && document.cookie.includes('connect.sid') ? { userId: 0, username: 'admin', isAdmin: true } : null);
+    apiGet('/api/pathways')
+      .then(() => {
+        // If we get here, assume admin if session exists
+        setUser(document.cookie.includes('connect.sid') ? { userId: 0, username: 'admin', isAdmin: true } : null);
+      })
+      .catch(() => {
+        // If we get an error, not admin
+        setUser(null);
       });
   }, []);
 
@@ -965,7 +953,7 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+    await apiPost('/api/logout', {});
     setUser(null);
   };
 

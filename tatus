@@ -1,0 +1,8 @@
+[33m842e751[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Add comprehensive deployment guide for full-stack application
+[33mac11ca5[m Prepare backend for deployment with Railway - add build scripts, health check, and deployment config
+[33m71fe940[m Add GitHub Pages deployment workflow and update Vite config
+[33m9b8b5ea[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Create tatus
+[33m842e751[m Add comprehensive deployment guide for full-stack application
+[33mac11ca5[m Prepare backend for deployment with Railway - add build scripts, health check, and deployment config
+[33m71fe940[m Add GitHub Pages deployment workflow and update Vite config
+[33meed3f2f[m Build frontend for production and fix TypeScript errors
