@@ -46,16 +46,39 @@ app.listen(PORT, () => {
   console.log(`📊 Health check available at: http://localhost:${PORT}/api/health`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   
-  // Initialize database in background
-  initializeDatabase();
+  // Initialize database in background with error handling
+  setTimeout(() => {
+    initializeDatabase();
+  }, 1000); // Wait 1 second before starting database init
 });
 
-// Database initialization function
+// Database initialization function with better error handling
 function initializeDatabase() {
-  console.log('Initializing database...');
-  const db = new sqlite3.Database(process.env.DATABASE_PATH || 'database.db');
+  console.log('Starting database initialization...');
   
-  // Create tables
+  try {
+    const db = new sqlite3.Database(process.env.DATABASE_PATH || 'database.db', (err) => {
+      if (err) {
+        console.error('Error opening database:', err);
+        return;
+      }
+      console.log('Database connection established');
+      
+      // Create tables with error handling
+      createTables(db);
+    });
+    
+    // Make database available globally
+    (global as any).db = db;
+  } catch (error) {
+    console.error('Error in database initialization:', error);
+  }
+}
+
+function createTables(db: sqlite3.Database) {
+  console.log('Creating tables...');
+  
+  // Create courses table
   db.run(`CREATE TABLE IF NOT EXISTS courses (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -80,6 +103,7 @@ function initializeDatabase() {
     }
   });
 
+  // Create users table
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -92,6 +116,7 @@ function initializeDatabase() {
     }
   });
 
+  // Create pathways table
   db.run(`CREATE TABLE IF NOT EXISTS pathways (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL
@@ -103,6 +128,7 @@ function initializeDatabase() {
     }
   });
 
+  // Create student_courses table
   db.run(`CREATE TABLE IF NOT EXISTS student_courses (
     user_id INTEGER,
     course_id TEXT,
@@ -117,7 +143,16 @@ function initializeDatabase() {
     }
   });
 
-  // Insert sample data
+  // Insert sample data after a delay
+  setTimeout(() => {
+    insertSampleData(db);
+  }, 2000);
+}
+
+function insertSampleData(db: sqlite3.Database) {
+  console.log('Inserting sample data...');
+  
+  // Insert sample pathway data
   db.run(`INSERT OR IGNORE INTO pathways (id, name) VALUES 
     ('path1', 'Informatics Core'),
     ('path2', 'Data Science Track'),
@@ -130,6 +165,7 @@ function initializeDatabase() {
     }
   });
 
+  // Insert sample course data
   db.run(`INSERT OR IGNORE INTO courses (id, name, quarter, pathway_id, description, credits) VALUES 
     ('INFO200', 'Foundations of Informatics', 'Autumn 2024', 'path1', 'Introduction to informatics concepts and methods', 5),
     ('INFO201', 'Technical Foundations of Informatics', 'Winter 2025', 'path1', 'Technical skills for informatics', 5),
@@ -149,9 +185,6 @@ function initializeDatabase() {
   });
 
   console.log('Database initialization complete!');
-  
-  // Make database available globally
-  (global as any).db = db;
 }
 
 // Middleware functions
@@ -300,7 +333,7 @@ app.get('/api/pathways', requireAuth, (req, res) => {
   if (!db) {
     return res.status(503).json({ error: 'Database not ready' });
   }
-  db.all('SELECT * FROM pathways', (err, rows) => {
+  db.all('SELECT * FROM pathways', (err: any, rows: any) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -322,7 +355,7 @@ app.post('/api/pathway/:pathwayId/courses', requireAdmin, (req, res) => {
   db.run(
     'INSERT INTO courses (id, name, quarter, pathway_id, description, credits, prerequisites, reddit_link, ratemyprofessor_link, difficulty_rating, workload_rating, schedule_days, schedule_time, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [id, name, quarter, pathwayId, description, credits, prerequisites, reddit_link, ratemyprofessor_link, difficulty_rating, workload_rating, schedule_days, schedule_time, start_date, end_date],
-    function (err) {
+    function (err: any) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -338,7 +371,7 @@ app.get('/api/pathway/:pathwayId/courses', requireAuth, (req, res) => {
     return res.status(503).json({ error: 'Database not ready' });
   }
   const { pathwayId } = req.params;
-  db.all('SELECT * FROM courses WHERE pathway_id = ?', [pathwayId], (err, rows) => {
+  db.all('SELECT * FROM courses WHERE pathway_id = ?', [pathwayId], (err: any, rows: any) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -353,7 +386,7 @@ app.delete('/api/course/:courseId', requireAdmin, (req, res) => {
     return res.status(503).json({ error: 'Database not ready' });
   }
   const { courseId } = req.params;
-  db.run('DELETE FROM courses WHERE id = ?', [courseId], function(err) {
+  db.run('DELETE FROM courses WHERE id = ?', [courseId], function(err: any) {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -377,7 +410,7 @@ app.post('/api/student-input', requireAuth, (req, res) => {
   db.run(
     `INSERT OR REPLACE INTO student_input (user_id, major, minor, focus_area, class_standing, prerequisites_completed, years_to_graduate) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [userId, major, minor, focusArea, classStanding, JSON.stringify(prerequisitesCompleted), yearsToGraduate],
-    function (err) {
+    function (err: any) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -396,7 +429,7 @@ app.get('/api/student-input', requireAuth, (req, res) => {
   if (!userId) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  db.get('SELECT * FROM student_input WHERE user_id = ?', [userId], (err, row) => {
+  db.get('SELECT * FROM student_input WHERE user_id = ?', [userId], (err: any, row: any) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -436,7 +469,7 @@ app.get('/api/ensure-columns', (req, res) => {
   if (!db) {
     return res.status(503).json({ error: 'Database not ready' });
   }
-  db.all("PRAGMA table_info(courses)", (err, columns) => {
+  db.all("PRAGMA table_info(courses)", (err: any, columns: any) => {
     if (err) return;
     const colNames = columns ? columns.map((col: any) => col.name) : [];
     if (!colNames.includes('schedule_days')) {
@@ -492,7 +525,7 @@ app.get('/api/myplan', (req, res) => {
   db.all(
     `SELECT c.* FROM student_courses sc JOIN courses c ON sc.course_id = c.id WHERE sc.user_id = ?`,
     [req.session.userId],
-    (err, rows) => {
+    (err: any, rows: any) => {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -518,7 +551,7 @@ app.post('/api/myplan', (req, res) => {
   db.run(
     'INSERT OR IGNORE INTO student_courses (user_id, course_id) VALUES (?, ?)',
     [req.session.userId, courseId],
-    function (err) {
+    function (err: any) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
@@ -541,7 +574,7 @@ app.delete('/api/myplan/:courseId', (req, res) => {
   db.run(
     'DELETE FROM student_courses WHERE user_id = ? AND course_id = ?',
     [req.session.userId, courseId],
-    function (err) {
+    function (err: any) {
       if (err) {
         return res.status(500).json({ error: 'Database error' });
       }
