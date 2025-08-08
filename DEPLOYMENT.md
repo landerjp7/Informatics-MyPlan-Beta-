@@ -1,120 +1,133 @@
-# 🚀 Deployment Guide - UW Course Planner Beta
+# Deployment Guide - Fixing SQLite3 Binary Issues
 
-This guide will help you deploy both the frontend and backend of your UW Course Planner application.
+## Problem
+The error `invalid ELF header` occurs because the SQLite3 native binary was compiled for a different architecture than the deployment environment. This is common when deploying to cloud platforms like Railway, Heroku, or Docker containers.
 
-## 📋 Prerequisites
+## Solutions
 
-- GitHub account
-- Railway account (free at [railway.app](https://railway.app))
-- Git installed on your computer
+### Solution 1: Use better-sqlite3 (Recommended)
+I've updated your backend to use `better-sqlite3` which has better deployment compatibility.
 
-## 🎯 Deployment Steps
+**Changes Made:**
+- Replaced `sqlite3` with `better-sqlite3` in `package.json`
+- Added `@types/better-sqlite3` for TypeScript support
+- Created a flexible database configuration in `src/database.ts`
+- Updated Railway configuration to rebuild binaries
 
-### **Step 1: Push to GitHub**
+**Next Steps:**
+1. Commit and push your changes
+2. Deploy to Railway - the new configuration should work
 
-First, push your code to GitHub:
+### Solution 2: Use PostgreSQL (Most Reliable for Production)
+For production deployments, PostgreSQL is more reliable than SQLite.
 
+**Setup:**
+1. Add a PostgreSQL database to your Railway project
+2. Set the `DATABASE_URL` environment variable in Railway
+3. The app will automatically use PostgreSQL when `DATABASE_URL` is available
+
+**Environment Variables to Set in Railway:**
+```
+DATABASE_URL=postgresql://username:password@host:port/database
+NODE_ENV=production
+```
+
+### Solution 3: Alternative Railway Configuration
+If you prefer to stick with the original sqlite3, you can use this alternative approach:
+
+**Update railway.json:**
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "cd backend && npm rebuild sqlite3 && npm start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+## Testing Locally
+
+1. **Install dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. **Test the build:**
+   ```bash
+   npm run build
+   ```
+
+3. **Test locally:**
+   ```bash
+   npm run dev
+   ```
+
+## Deployment Commands
+
+**For Railway:**
 ```bash
-git push origin main
+# The deployment will automatically:
+# 1. Install dependencies
+# 2. Rebuild better-sqlite3 binaries
+# 3. Build TypeScript
+# 4. Start the application
 ```
 
-If you encounter authentication issues, you may need to:
-- Create a Personal Access Token in GitHub Settings
-- Or use GitHub CLI: `gh auth login`
-
-### **Step 2: Deploy Backend to Railway**
-
-1. **Sign up for Railway**
-   - Go to [railway.app](https://railway.app)
-   - Sign up with your GitHub account
-
-2. **Create New Project**
-   - Click "New Project"
-   - Select "Deploy from GitHub repo"
-   - Choose your repository: `landerjp7/Informatics-MyPlan-Beta-`
-
-3. **Configure Deployment**
-   - Railway will automatically detect it's a Node.js project
-   - The `railway.json` file will configure the deployment
-   - Set the root directory to `backend`
-
-4. **Get Your Backend URL**
-   - Once deployed, Railway will provide a URL like: `https://your-app-name.railway.app`
-   - Copy this URL for the next step
-
-### **Step 3: Update Frontend API URL**
-
-1. **Go to your GitHub repository**
-2. **Navigate to**: `frontend/src/App.tsx`
-3. **Find all API calls** and update the base URL
-4. **Replace**: `http://localhost:5000` with your Railway URL
-
-### **Step 4: Deploy Frontend to GitHub Pages**
-
-1. **Go to your repository settings**
-   - Navigate to `Settings` → `Pages`
-   - Under "Source", select "Deploy from a branch"
-   - Choose `gh-pages` branch
-   - Click "Save"
-
-2. **Monitor Deployment**
-   - Check the "Actions" tab to see deployment progress
-   - Once complete, your frontend will be available at:
-   - `https://landerjp7.github.io/Informatics-MyPlan-Beta/`
-
-## 🔗 Your Application URLs
-
-- **Frontend**: `https://landerjp7.github.io/Informatics-MyPlan-Beta/`
-- **Backend API**: `https://your-railway-app.railway.app`
-- **GitHub Repository**: `https://github.com/landerjp7/Informatics-MyPlan-Beta-`
-
-## 🛠️ Manual API URL Update
-
-If you need to update the API URL manually, replace all instances of:
-```javascript
-fetch('/api/...')
+**Manual deployment steps:**
+```bash
+cd backend
+npm install
+npm run rebuild  # Rebuild native binaries
+npm run build    # Build TypeScript
+npm start        # Start the application
 ```
 
-With:
-```javascript
-fetch('https://your-railway-app.railway.app/api/...')
-```
+## Troubleshooting
 
-## 📊 Monitoring
+### If you still get binary errors:
+1. **Clear node_modules and reinstall:**
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
 
-- **Frontend**: Check GitHub Actions for deployment status
-- **Backend**: Monitor Railway dashboard for logs and performance
-- **Health Check**: Visit `https://your-railway-app.railway.app/api/health`
+2. **Force rebuild:**
+   ```bash
+   npm run rebuild
+   ```
 
-## 🔧 Troubleshooting
+3. **Check your Node.js version:**
+   ```bash
+   node --version
+   ```
+   Make sure it matches your deployment environment (Node.js 18.x)
 
-### **Backend Issues**
-- Check Railway logs for errors
-- Verify the `start` script in `package.json`
-- Ensure all dependencies are in `dependencies` (not `devDependencies`)
+### If you want to use PostgreSQL:
+1. Add PostgreSQL service to your Railway project
+2. Set the `DATABASE_URL` environment variable
+3. The app will automatically switch to PostgreSQL
 
-### **Frontend Issues**
-- Check browser console for API errors
-- Verify the API URL is correct
-- Check GitHub Actions for build errors
+## Environment Variables
 
-### **Database Issues**
-- Railway provides persistent storage
-- The SQLite database will be created automatically
-- Check logs for database connection errors
+**Required for Railway:**
+- `PORT` (automatically set by Railway)
+- `NODE_ENV=production`
 
-## 🎉 Success!
+**Optional:**
+- `DATABASE_URL` (for PostgreSQL)
+- `USE_POSTGRES=true` (force PostgreSQL usage)
 
-Once deployed, your full-stack application will be accessible to anyone with the URLs above. Users can:
-- Register and login
-- Browse courses and pathways
-- Create and manage their course plans
-- Access all features from anywhere in the world!
+## Database Migration
 
-## 📞 Support
+The new database configuration automatically:
+- Creates SQLite tables if using SQLite
+- Works with existing PostgreSQL schemas
+- Handles both database types seamlessly
 
-If you encounter issues:
-1. Check the logs in Railway dashboard
-2. Review GitHub Actions for frontend deployment
-3. Test the health check endpoint
-4. Verify all environment variables are set correctly
+No manual migration is required - the app will work with either database type.
