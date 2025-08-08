@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node simple-server.js",
+    "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "build": "tsc",
     "postinstall": "npm run build"
