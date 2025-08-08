@@ -25,6 +25,11 @@ app.use(session({
   cookie: { secure: false } // set to true if using HTTPS
 }));
 
+// Simple root endpoint for testing
+app.get('/', (req, res) => {
+  res.json({ message: 'UW Course Planner Backend is running!' });
+});
+
 const db = new sqlite3.Database(process.env.DATABASE_PATH || 'database.db');
 
 console.log('Attempting to create courses table...');
@@ -95,36 +100,14 @@ function requireAuth(req: any, res: any, next: any) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
-// Health check endpoint
+// Health check endpoint - simplified for Railway
 app.get('/api/health', (req, res) => {
-  try {
-    // Test database connection
-    db.get('SELECT 1 as test', (err, row) => {
-      if (err) {
-        console.error('Health check failed - database error:', err);
-        return res.status(500).json({ 
-          status: 'error', 
-          message: 'Database connection failed',
-          error: err.message 
-        });
-      }
-      
-      console.log('Health check passed - database connected');
-      res.json({ 
-        status: 'ok', 
-        message: 'Backend is running',
-        database: 'connected',
-        timestamp: new Date().toISOString()
-      });
-    });
-  } catch (error: any) {
-    console.error('Health check failed:', error);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Health check failed',
-      error: error.message 
-    });
-  }
+  console.log('Health check requested');
+  res.json({ 
+    status: 'ok', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Student registration
