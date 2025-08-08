@@ -290,12 +290,15 @@ function PathwaysList({ isAdmin }: { isAdmin: boolean }) {
   const [error, setError] = useState('');
   const refresh = () => {
     setLoading(true);
+    console.log('🔍 Making API call to /api/pathways...');
     apiGet('/api/pathways')
       .then(data => {
+        console.log('✅ API call successful:', data);
         setPathways(data.pathways);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('❌ API call failed:', error);
         setError('Failed to load pathways');
         setLoading(false);
       });
