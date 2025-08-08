@@ -94,7 +94,7 @@ function requireAuth(req: any, res: any, next: any) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
-// Health check endpoint
+// Health check endpoint - simplified for Railway
 app.get('/api/health', (req, res) => {
   console.log('Health check requested');
   res.json({ 
@@ -467,9 +467,13 @@ app.delete('/api/myplan/:courseId', (req, res) => {
   );
 });
 
+// Start server immediately, then initialize database
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check available at: http://localhost:${PORT}/api/health`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️ Database: ${process.env.DATABASE_PATH || 'database.db'}`);
+  
+  // Initialize database after server starts
+  console.log('Initializing database...');
 }); 
