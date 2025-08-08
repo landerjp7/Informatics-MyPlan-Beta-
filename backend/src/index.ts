@@ -25,7 +25,7 @@ app.use(session({
   cookie: { secure: false } // set to true if using HTTPS
 }));
 
-const db = new sqlite3.Database('database.db');
+const db = new sqlite3.Database(process.env.DATABASE_PATH || 'database.db');
 
 console.log('Attempting to create courses table...');
 db.run(`CREATE TABLE IF NOT EXISTS courses (
