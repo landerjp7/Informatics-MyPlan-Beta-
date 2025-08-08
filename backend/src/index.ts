@@ -189,7 +189,7 @@ app.post('/api/register', async (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 6 characters long' });
   }
   
-  db.get('SELECT id FROM users WHERE username = ?', [username], async (err, row) => {
+  db.get('SELECT id FROM users WHERE username = ?', [username], async (err: any, row: any) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -201,7 +201,7 @@ app.post('/api/register', async (req, res) => {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], function(err) {
+      db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], function(this: any, err: any) {
         if (err) {
           return res.status(500).json({ error: 'Database error' });
         }
@@ -234,7 +234,7 @@ app.post('/api/student-login', (req, res) => {
     return res.status(400).json({ error: 'Username and password are required' });
   }
   
-  db.get('SELECT id, password FROM users WHERE username = ?', [username], async (err, row: any) => {
+  db.get('SELECT id, password FROM users WHERE username = ?', [username], async (err: any, row: any) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -286,7 +286,7 @@ app.post('/api/pathways', requireAdmin, (req, res) => {
   if (!id || !name) {
     return res.status(400).json({ error: 'Pathway ID and name are required' });
   }
-  db.run('INSERT INTO pathways (id, name) VALUES (?, ?)', [id, name], function(err) {
+  db.run('INSERT INTO pathways (id, name) VALUES (?, ?)', [id, name], function(err: any) {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
