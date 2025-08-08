@@ -933,8 +933,11 @@ function App() {
       <Routes>
         <Route path="/" element={
           <>
-            <div style={{background: 'red', color: 'white', padding: '10px', margin: '10px'}}>
+            <div style={{background: 'red', color: 'white', padding: '10px', margin: '10px', fontSize: '20px', fontWeight: 'bold'}}>
               🧪 TEST: Main content should be visible
+            </div>
+            <div style={{background: 'blue', color: 'white', padding: '10px', margin: '10px'}}>
+              🧪 TEST: This should also be visible
             </div>
             <StudentAuth onLogin={handleLogin} />
             <AdminLoginForm onLogin={handleLogin} />
