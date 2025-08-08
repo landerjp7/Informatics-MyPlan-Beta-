@@ -229,19 +229,13 @@ function AddPathwayForm({ onAdd }: { onAdd: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    const res = await fetch('/api/pathways', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ id, name })
-    });
-    if (res.ok) {
+    try {
+      await apiPost('/api/pathways', { id, name });
       setSuccess('Pathway added!');
       setId(''); setName('');
       onAdd();
-    } else {
-      const data = await res.json();
-      setError(data.error || 'Failed to add pathway');
+    } catch (error: any) {
+      setError(error.message || 'Failed to add pathway');
     }
   };
 
@@ -366,7 +360,7 @@ function PathwayCourses({ isAdmin, user }: { isAdmin: boolean, user: User | null
         setError('Failed to load courses');
         setLoading(false);
       });
-    apiGet('/api/pathways')
+    apiGet('/api/myplan')
       .then(data => {
         const pathway = data.pathways.find((p: any) => p.id === id);
         setPathwayName(pathway ? pathway.name : id);
