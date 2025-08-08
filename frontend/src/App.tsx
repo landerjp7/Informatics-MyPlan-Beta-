@@ -924,6 +924,9 @@ function App() {
       <Routes>
         <Route path="/" element={
           <>
+            <div style={{background: 'red', color: 'white', padding: '10px', margin: '10px'}}>
+              🧪 TEST: Main content should be visible
+            </div>
             <StudentAuth onLogin={handleLogin} />
             <AdminLoginForm onLogin={handleLogin} />
             <PathwaysList isAdmin={user?.isAdmin || false} />
