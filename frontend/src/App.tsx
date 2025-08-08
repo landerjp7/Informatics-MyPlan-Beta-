@@ -910,6 +910,13 @@ function App() {
     setUser(null);
     console.log('👤 User set to null, should show public content');
     
+    // Debug: Check what's in the DOM
+    setTimeout(() => {
+      const rootElement = document.getElementById('root');
+      console.log('🔍 Root element contents:', rootElement?.innerHTML);
+      console.log('🔍 Root element children:', rootElement?.children);
+    }, 1000);
+    
     // Optionally check for existing session later if needed
     // For now, let users see the public content and login forms
   }, []);
@@ -930,6 +937,9 @@ function App() {
   return (
     <Router>
       <AdminBar user={user} onLogout={handleLogout} />
+      <div style={{background: 'green', color: 'white', padding: '10px', margin: '10px', fontSize: '16px'}}>
+        🧪 TEST: This should be visible above routes
+      </div>
       <Routes>
         <Route path="/" element={
           <>
