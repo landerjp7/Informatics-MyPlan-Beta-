@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
+import { initializeDatabase, closeDatabase } from './database';
 
 // Extend the Request interface to include session
 declare module 'express-session' {
@@ -13,6 +14,28 @@ declare module 'express-session' {
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Initialize database
+try {
+  initializeDatabase();
+  console.log('Database initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize database:', error);
+  process.exit(1);
+}
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('Shutting down gracefully...');
+  closeDatabase();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Shutting down gracefully...');
+  closeDatabase();
+  process.exit(0);
+});
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
