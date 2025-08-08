@@ -16,25 +16,28 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize database
-try {
-  initializeDatabase();
-  console.log('Database initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-}
+initializeDatabase()
+  .then(() => {
+    console.log('Database initialized successfully');
+  })
+  .catch((error) => {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
+  });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('Shutting down gracefully...');
-  closeDatabase();
-  process.exit(0);
+  closeDatabase().then(() => {
+    process.exit(0);
+  });
 });
 
 process.on('SIGTERM', () => {
   console.log('Shutting down gracefully...');
-  closeDatabase();
-  process.exit(0);
+  closeDatabase().then(() => {
+    process.exit(0);
+  });
 });
 
 app.use(cors({ origin: true, credentials: true }));
