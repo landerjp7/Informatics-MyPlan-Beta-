@@ -10,6 +10,7 @@ interface User {
 }
 
 function AdminBar({ user, onLogout }: { user: User | null, onLogout: () => void }) {
+  console.log('🏛️ AdminBar rendering, user:', user);
   return (
     <div className="admin-bar">
       {user ? (
@@ -895,21 +896,27 @@ function App() {
 
   // Check login state on mount - simplified approach
   useEffect(() => {
+    console.log('🚀 App component mounted');
     // Always start with no user, show public content
     setUser(null);
+    console.log('👤 User set to null, should show public content');
     
     // Optionally check for existing session later if needed
     // For now, let users see the public content and login forms
   }, []);
 
   const handleLogin = (user: User) => {
+    console.log('🔐 Login handler called with user:', user);
     setUser(user);
   };
 
   const handleLogout = async () => {
+    console.log('🚪 Logout handler called');
     await apiPost('/api/logout', {});
     setUser(null);
   };
+
+  console.log('🎨 App component rendering, user:', user);
 
   return (
     <Router>
