@@ -10,24 +10,26 @@ const database_1 = require("./database");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // Initialize database
-try {
-    (0, database_1.initializeDatabase)();
+(0, database_1.initializeDatabase)()
+    .then(() => {
     console.log('Database initialized successfully');
-}
-catch (error) {
+})
+    .catch((error) => {
     console.error('Failed to initialize database:', error);
     process.exit(1);
-}
+});
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('Shutting down gracefully...');
-    (0, database_1.closeDatabase)();
-    process.exit(0);
+    (0, database_1.closeDatabase)().then(() => {
+        process.exit(0);
+    });
 });
 process.on('SIGTERM', () => {
     console.log('Shutting down gracefully...');
-    (0, database_1.closeDatabase)();
-    process.exit(0);
+    (0, database_1.closeDatabase)().then(() => {
+        process.exit(0);
+    });
 });
 app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
