@@ -935,29 +935,13 @@ function StudentCourseBrowser({ user: _user }: { user: User }) {
 function App() {
   const [user, setUser] = useState<User | null>(null);
 
-  // Check login state on mount
+  // Check login state on mount - simplified approach
   useEffect(() => {
-    // Check if user is logged in by trying to access a protected endpoint
-    apiGet('/api/myplan')
-      .then(() => {
-        // If we can access myplan, user is logged in as student
-        setUser({ userId: 1, username: 'student', isAdmin: false });
-      })
-      .catch(() => {
-        // Check if admin session exists
-        if (document.cookie.includes('connect.sid')) {
-          // Try admin endpoint to confirm
-          apiGet('/api/pathways')
-            .then(() => {
-              setUser({ userId: 0, username: 'admin', isAdmin: true });
-            })
-            .catch(() => {
-              setUser(null);
-            });
-        } else {
-          setUser(null);
-        }
-      });
+    // Always start with no user, show public content
+    setUser(null);
+    
+    // Optionally check for existing session later if needed
+    // For now, let users see the public content and login forms
   }, []);
 
   const handleLogin = (user: User) => {
