@@ -97,7 +97,34 @@ function requireAuth(req: any, res: any, next: any) {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Backend is running' });
+  try {
+    // Test database connection
+    db.get('SELECT 1 as test', (err, row) => {
+      if (err) {
+        console.error('Health check failed - database error:', err);
+        return res.status(500).json({ 
+          status: 'error', 
+          message: 'Database connection failed',
+          error: err.message 
+        });
+      }
+      
+      console.log('Health check passed - database connected');
+      res.json({ 
+        status: 'ok', 
+        message: 'Backend is running',
+        database: 'connected',
+        timestamp: new Date().toISOString()
+      });
+    });
+  } catch (error: any) {
+    console.error('Health check failed:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Health check failed',
+      error: error.message 
+    });
+  }
 });
 
 // Student registration
@@ -480,5 +507,8 @@ app.delete('/api/myplan/:courseId', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🗄️ Database: ${process.env.DATABASE_PATH || 'database.db'}`);
 }); 
